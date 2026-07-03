@@ -23,7 +23,7 @@
 		"editorBracketHighlight.foreground5": "#dddddd",
 		"editorBracketHighlight.foreground6": "#dddddd",
 		"editorBracketMatch.border": "#007acc",
-		"editorGutter.modifiedBackground": "#e0d800",
+		"editorGutter.modifiedBackground": "#007acc",
 		"editorWarning.foreground": "#e0d800",
 		"editorInfo.foreground": "#007acc",
 		"focusBorder": "#007acc",
