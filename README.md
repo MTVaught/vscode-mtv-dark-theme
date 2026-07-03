@@ -37,10 +37,14 @@ started manually. The workflow finds the latest successful `Build` workflow run
 on `main`, downloads its VSIX artifact, and creates a GitHub prerelease if that
 commit has not already been prereleased as `nightly-*`.
 
-To publish a stable GitHub release, run the `Release` workflow manually and
-provide the nightly tag or commit SHA to promote. The workflow packages that
-exact ref and creates a stable release tagged from the extension version in
-`package.json`.
+To prepare a stable release, run the `Prepare Release` workflow manually and
+choose `patch`, `minor`, or `major`. The workflow updates `package.json`,
+creates a version commit and tag, and pushes both to `main`.
+
+After the `Build` workflow succeeds for the version commit, run the `Release`
+workflow manually and provide the version tag or commit SHA to promote. The
+workflow downloads the matching `Build` workflow VSIX artifact and creates a
+stable GitHub release tagged from the extension version in `package.json`.
 
 Marketplace publishing is intentionally commented out in the workflows until a
 VS Code Marketplace publisher account and `VSCE_PAT` repository secret are set
