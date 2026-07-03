@@ -13,25 +13,28 @@ jobs:
   package:
     name: Package VS Code Extension
     runs-on: ubuntu-latest
+    env:
+      NPM_CONFIG_UPDATE_NOTIFIER: "false"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Validate package contents
-        run: npx --yes @vscode/vsce ls
+        run: npx --yes --loglevel=error @vscode/vsce ls
 
       - name: Package extension
-        run: npx --yes @vscode/vsce package
+        run: npx --yes --loglevel=error @vscode/vsce package
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vscode-extension
           path: "*.vsix"
           if-no-files-found: error
+          retention-days: 30

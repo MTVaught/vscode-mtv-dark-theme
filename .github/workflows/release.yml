@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Nightly tag or commit SHA to promote"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Promote nightly to release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout selected ref
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Resolve selected ref
+        id: ref
+        run: |
+          sha="$(git rev-parse HEAD)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Read extension version
+        id: version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Find matching successful main build
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          run_json="$(gh run list \
+            --workflow build.yml \
+            --branch main \
+            --commit "${{ steps.ref.outputs.sha }}" \
+            --status success \
+            --limit 1 \
+            --json databaseId,headSha \
+            --jq '.[0]')"
+
+          if [[ -z "$run_json" || "$run_json" == "null" ]]; then
+            echo "No successful Build workflow run found on main for ${{ steps.ref.outputs.sha }}."
+            exit 1
+          fi
+
+          run_id="$(jq -r '.databaseId' <<< "$run_json")"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Download VSIX from main build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ steps.build.outputs.run_id }}" \
+            --name vscode-extension \
+            --dir artifacts
+
+      - name: Prepare release asset
+        id: asset
+        shell: bash
+        run: |
+          asset="vscode-mtvaught-dark-theme-${{ steps.version.outputs.version }}.vsix"
+
+          vsix="$(find artifacts -name '*.vsix' -type f | head -n 1)"
+          if [[ -z "$vsix" ]]; then
+            echo "No VSIX file found in downloaded build artifact."
+            exit 1
+          fi
+
+          mv "$vsix" "$asset"
+          echo "asset=$asset" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            "${{ steps.asset.outputs.asset }}" \
+            --target "${{ steps.ref.outputs.sha }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --notes "Promoted from ${{ inputs.ref }} using Build run ${{ steps.build.outputs.run_id }}."
+
+      # Enable this after the Marketplace publisher exists and VSCE_PAT has
+      # been added as a repository secret. Keep this after validation/package
+      # steps so Marketplace publishing only happens after the selected ref can
+      # produce a valid VSIX.
+      #
+      # - name: Publish to VS Code Marketplace
+      #   run: npx --yes @vscode/vsce publish
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}

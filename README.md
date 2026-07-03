@@ -1,4 +1,4 @@
-# MTV Dark Color Theme
+# MTVaught Dark Theme
 
 A dark color theme for Visual Studio Code.
 
@@ -20,12 +20,32 @@ Package the theme into a `.vsix` file:
 vsce package
 ```
 
-This produces a `mtv-dark-<version>.vsix` file in the project root.
+This produces a `vscode-mtvaught-dark-theme-<version>.vsix` file in the project root.
 
 ### Install Locally
 
 Install the packaged extension directly in VS Code:
 
 ```bash
-code --install-extension mtv-dark-<version>.vsix
+code --install-extension vscode-mtvaught-dark-theme-<version>.vsix
 ```
+
+## Release Process
+
+Nightly prereleases run from GitHub Actions on a schedule and can also be
+started manually. The workflow finds the latest successful `Build` workflow run
+on `main`, downloads its VSIX artifact, and creates a GitHub prerelease if that
+commit has not already been prereleased as `nightly-*`.
+
+To prepare a stable release, run the `Prepare Release` workflow manually and
+choose `patch`, `minor`, or `major`. The workflow updates `package.json`,
+creates a version commit and tag, and pushes both to `main`.
+
+After the `Build` workflow succeeds for the version commit, run the `Release`
+workflow manually and provide the version tag or commit SHA to promote. The
+workflow downloads the matching `Build` workflow VSIX artifact and creates a
+stable GitHub release tagged from the extension version in `package.json`.
+
+Marketplace publishing is intentionally commented out in the workflows until a
+VS Code Marketplace publisher account and `VSCE_PAT` repository secret are set
+up.

@@ -1,0 +1,115 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    name: Create nightly prerelease
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Find latest successful main build
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          run_json="$(gh run list \
+            --workflow build.yml \
+            --branch main \
+            --status success \
+            --limit 1 \
+            --json databaseId,headSha \
+            --jq '.[0]')"
+
+          if [[ -z "$run_json" || "$run_json" == "null" ]]; then
+            echo "No successful Build workflow run found on main."
+            exit 1
+          fi
+
+          run_id="$(jq -r '.databaseId' <<< "$run_json")"
+          head_sha="$(jq -r '.headSha' <<< "$run_json")"
+
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing nightly prerelease
+        id: prerelease
+        shell: bash
+        run: |
+          last_tag="$(git tag --list 'nightly-*' --sort=-creatordate | head -n 1)"
+
+          if [[ -n "$last_tag" ]] && [[ "$(git rev-list -n 1 "$last_tag")" == "${{ steps.build.outputs.head_sha }}" ]]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "Latest successful main build already has nightly prerelease $last_tag."
+            exit 0
+          fi
+
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Download VSIX from main build
+        if: steps.prerelease.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ steps.build.outputs.run_id }}" \
+            --name vscode-extension \
+            --dir artifacts
+
+      - name: Prepare prerelease asset
+        if: steps.prerelease.outputs.should_release == 'true'
+        id: asset
+        shell: bash
+        run: |
+          stamp="$(date -u +'%Y%m%d-%H%M%S')"
+          tag="nightly-${stamp}"
+          asset="vscode-mtvaught-dark-theme-${tag}.vsix"
+
+          vsix="$(find artifacts -name '*.vsix' -type f | head -n 1)"
+          if [[ -z "$vsix" ]]; then
+            echo "No VSIX file found in downloaded build artifact."
+            exit 1
+          fi
+
+          mv "$vsix" "$asset"
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "asset=$asset" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub prerelease
+        if: steps.prerelease.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.asset.outputs.tag }}" \
+            "${{ steps.asset.outputs.asset }}" \
+            --target "${{ steps.build.outputs.head_sha }}" \
+            --title "Nightly ${{ steps.asset.outputs.tag }}" \
+            --notes "Nightly prerelease from Build run ${{ steps.build.outputs.run_id }} at ${{ steps.build.outputs.head_sha }}." \
+            --prerelease
+
+      # Enable this later if you want nightly builds published to the VS Code
+      # Marketplace prerelease channel. Requires a Marketplace publisher and a
+      # VSCE_PAT repository secret.
+      #
+      # - name: Publish Marketplace prerelease
+      #   if: steps.prerelease.outputs.should_release == 'true'
+      #   run: npx --yes @vscode/vsce publish --pre-release
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
