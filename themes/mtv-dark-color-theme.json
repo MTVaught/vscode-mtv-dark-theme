@@ -1,0 +1,65 @@
+{
+	"name": "mtv-dark",
+	"type": "dark",
+	"semanticHighlighting": true,
+	"semanticTokenColors": {
+		"comment": "#e0d800",
+		"string": "#007acc",
+		"property.json": "#dddddd"
+	},
+	"colors": {
+		"editor.background": "#000000",
+		"editor.foreground": "#dddddd",
+		"activityBarBadge.background": "#007acc",
+		"activityBarBadge.foreground": "#ffffff",
+		"badge.background": "#007acc",
+		"badge.foreground": "#ffffff",
+		"button.background": "#007acc",
+		"button.foreground": "#ffffff",
+		"editorBracketMatch.border": "#007acc",
+		"editorGutter.modifiedBackground": "#e0d800",
+		"editorWarning.foreground": "#e0d800",
+		"editorInfo.foreground": "#007acc",
+		"focusBorder": "#007acc",
+		"gitDecoration.modifiedResourceForeground": "#e0d800",
+		"notificationLink.foreground": "#007acc",
+		"peekView.border": "#007acc",
+		"progressBar.background": "#007acc",
+		"sideBar.background": "#000000",
+		"sideBar.border": "#333333",
+		"sideBarTitle.foreground": "#bbbbbb",
+		"tab.activeBorder": "#007acc",
+		"statusBar.background": "#000000",
+		"statusBar.border": "#333333"
+	},
+	"tokenColors": [
+		{
+			"name": "Comment",
+			"scope": [
+				"comment",
+				"punctuation.definition.comment"
+			],
+			"settings": {
+				"foreground": "#e0d800"
+			}
+		},
+		{
+			"name": "String",
+			"scope": [
+				"string",
+				"punctuation.definition.string",
+				"punctuation.definition.template-expression"
+			],
+			"settings": {
+				"foreground": "#007acc"
+			}
+		},
+		{
+			"name": "JSON property key",
+			"scope": "support.type.property-name.json",
+			"settings": {
+				"foreground": "#dddddd"
+			}
+		}
+	]
+}
