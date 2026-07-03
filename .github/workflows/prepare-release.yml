@@ -13,7 +13,9 @@ on:
           - major
 
 permissions:
+  actions: write
   contents: write
+  pull-requests: write
 
 concurrency:
   group: prepare-release
@@ -44,12 +46,36 @@ jobs:
       - name: Bump package version
         id: version
         run: |
-          npm version "${{ inputs.version_bump }}" -m "Release %s"
+          npm version "${{ inputs.version_bump }}" --no-git-tag-version
           version="$(node -p "require('./package.json').version")"
+          branch="release/v$version"
+
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
-      - name: Push version commit and tag
+      - name: Commit version bump
         run: |
-          git push origin main
-          git push origin "${{ steps.version.outputs.tag }}"
+          git switch -c "${{ steps.version.outputs.branch }}"
+          git add package.json package-lock.json
+          git commit -m "Release ${{ steps.version.outputs.tag }}"
+
+      - name: Push release branch
+        run: |
+          git push --set-upstream origin "${{ steps.version.outputs.branch }}"
+
+      - name: Open release pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "${{ steps.version.outputs.branch }}" \
+            --title "Release ${{ steps.version.outputs.tag }}" \
+            --body "Bumps the extension version to ${{ steps.version.outputs.version }}."
+
+      - name: Dispatch build for release branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run build.yml --ref "${{ steps.version.outputs.branch }}"
