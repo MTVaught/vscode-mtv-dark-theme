@@ -16,6 +16,12 @@
 		"badge.foreground": "#ffffff",
 		"button.background": "#007acc",
 		"button.foreground": "#ffffff",
+		"editorBracketHighlight.foreground1": "#dddddd",
+		"editorBracketHighlight.foreground2": "#dddddd",
+		"editorBracketHighlight.foreground3": "#dddddd",
+		"editorBracketHighlight.foreground4": "#dddddd",
+		"editorBracketHighlight.foreground5": "#dddddd",
+		"editorBracketHighlight.foreground6": "#dddddd",
 		"editorBracketMatch.border": "#007acc",
 		"editorGutter.modifiedBackground": "#e0d800",
 		"editorWarning.foreground": "#e0d800",
@@ -47,11 +53,31 @@
 			"name": "String",
 			"scope": [
 				"string",
-				"punctuation.definition.string",
-				"punctuation.definition.template-expression"
+				"punctuation.definition.string"
 			],
 			"settings": {
 				"foreground": "#007acc"
+			}
+		},
+		{
+			"name": "TypeScript brackets and parentheses",
+			"scope": [
+				"punctuation.definition.parameters.begin.ts",
+				"punctuation.definition.parameters.end.ts",
+				"punctuation.definition.block.ts",
+				"punctuation.definition.binding-pattern.array.ts",
+				"punctuation.definition.binding-pattern.object.ts",
+				"punctuation.section.parens.begin.ts",
+				"punctuation.section.parens.end.ts",
+				"punctuation.section.brackets.begin.ts",
+				"punctuation.section.brackets.end.ts",
+				"punctuation.section.braces.begin.ts",
+				"punctuation.section.braces.end.ts",
+				"punctuation.definition.template-expression.begin.ts",
+				"punctuation.definition.template-expression.end.ts"
+			],
+			"settings": {
+				"foreground": "#dddddd"
 			}
 		},
 		{
