@@ -1,15 +1,15 @@
 {
-    "name": "mtv-dark",
-    "displayName": "mtv-dark",
+    "name": "vscode-mtvaught-dark-theme",
+    "displayName": "MTVaught Dark Theme",
     "description": "A dark color theme for Visual Studio Code.",
     "version": "0.1.0",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/mtvaught/vscode-mtv-dark-theme.git"
+        "url": "https://github.com/mtvaught/vscode-mtvaught-dark-theme.git"
     },
     "bugs": {
-        "url": "https://github.com/mtvaught/vscode-mtv-dark-theme/issues"
+        "url": "https://github.com/mtvaught/vscode-mtvaught-dark-theme/issues"
     },
     "engines": {
         "vscode": "^1.90.0"
@@ -20,9 +20,9 @@
     "contributes": {
         "themes": [
             {
-                "label": "mtv-dark",
+                "label": "MTVaught Dark Theme",
                 "uiTheme": "vs-dark",
-                "path": "./themes/mtv-dark-color-theme.json"
+                "path": "./themes/mtvaught-dark-color-theme.json"
             }
         ]
     }
