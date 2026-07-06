@@ -2,7 +2,7 @@
     "name": "vscode-mtvaught-dark-theme",
     "displayName": "MTVaught Dark Theme",
     "description": "A dark color theme for Visual Studio Code.",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "publisher": "mtvaught",
     "license": "MIT",
     "repository": {
